@@ -1,14 +1,11 @@
-import pg from "pg";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+const pg = require("pg");
+const fs = require("fs");
+const path = require("path");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 // Test if the filesystem is read-only (like Vercel serverless environment)
 let isReadOnly = false;
 try {
-  const testPath = path.join(__dirname, "..", "data", "write_test.txt");
+  const testPath = path.join(process.cwd(), "data", "write_test.txt");
   const dir = path.dirname(testPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -21,10 +18,10 @@ try {
 
 const fallbackHistoryPath = isReadOnly
   ? path.join("/tmp", "search_history.json")
-  : path.join(__dirname, "..", "data", "search_history.json");
+  : path.join(process.cwd(), "data", "search_history.json");
 const usersPath = isReadOnly
   ? path.join("/tmp", "users.json")
-  : path.join(__dirname, "..", "data", "users.json");
+  : path.join(process.cwd(), "data", "users.json");
 
 const { Pool } = pg;
 const dbUrl = process.env.DATABASE_URL;
@@ -41,7 +38,7 @@ if (!useFallback) {
   try {
     pool = new Pool({
       connectionString,
-      connectionTimeoutMillis: 2000 // 2 seconds timeout to fail quickly if Postgres is not running
+      connectionTimeoutMillis: 10000 // 10 seconds timeout to allow Neon cold starts to spin up
     });
     pool.on("error", (err) => {
       console.error("Unexpected error on idle database client:", err);
@@ -74,7 +71,7 @@ function ensureFallbackFiles() {
 /**
  * Initializes the database tables if they do not exist.
  */
-export async function initDatabase() {
+async function initDatabase() {
   if (useFallback) {
     ensureFallbackFiles();
     return;
@@ -125,7 +122,7 @@ export async function initDatabase() {
  * SQL-to-JSON query broker proxy.
  * Routes requests to PG pool or JSON files based on connection status.
  */
-export async function query(text, params) {
+async function query(text, params) {
   if (useFallback) {
     return handleFallbackQuery(text, params);
   }
@@ -233,4 +230,6 @@ const db = {
   }
 };
 
-export default db;
+module.exports = db;
+module.exports.initDatabase = initDatabase;
+module.exports.query = query;

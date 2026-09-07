@@ -1,6 +1,6 @@
-import { Router } from "express";
-import pool from "../services/db.js";
-import { authenticate } from "../middleware/auth.js";
+const { Router } = require("express");
+const pool = require("../services/db.js");
+const { authenticate } = require("../middleware/auth.js");
 
 const router = Router();
 
@@ -74,4 +74,4 @@ router.delete("/api/history", authenticate, async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

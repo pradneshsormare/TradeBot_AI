@@ -1,7 +1,7 @@
 // stockTools.js
 // Fetches daily OHLC candles (no API key needed, via stooq.com CSV) and
 // detects common candlestick patterns using standard technical-analysis rules.
-import { EMA, RSI } from "trading-signals";
+const { EMA, RSI } = require("trading-signals");
 
 /**
  * Fetch recent daily candles for a symbol.
@@ -9,7 +9,7 @@ import { EMA, RSI } from "trading-signals";
  * @param {string} symbol e.g. "AAPL", "TSLA"
  * @param {number} days how many recent candles to return
  */
-export async function fetchCandles(symbol, rangeOrDays = "3mo", interval = "1d") {
+async function fetchCandles(symbol, rangeOrDays = "3mo", interval = "1d") {
   const clean = symbol.trim().toLowerCase();
   
   let range = "3mo";
@@ -291,7 +291,7 @@ function detectSpinningTop(c) {
  * Detect trend direction, strength, higher-highs/lows, and reversal signals.
  * Returns structured data with chart positions.
  */
-export function findSwingPoints(candles, lookback = 3) {
+function findSwingPoints(candles, lookback = 3) {
   const highs = [];
   const lows = [];
 
@@ -336,7 +336,7 @@ export function findSwingPoints(candles, lookback = 3) {
   return { highs, lows };
 }
 
-export function analyzeMarketStructure(swings) {
+function analyzeMarketStructure(swings) {
   let bullishPoints = 0;
   let bearishPoints = 0;
   const labels = [];
@@ -382,7 +382,7 @@ export function analyzeMarketStructure(swings) {
   };
 }
 
-export function calculateSlope(candles) {
+function calculateSlope(candles) {
   if (candles.length < 2) {
     return { value: 0, normalized: 0, direction: "flat" };
   }
@@ -418,7 +418,7 @@ export function calculateSlope(candles) {
   };
 }
 
-export function calculateEMA(candles, period) {
+function calculateEMA(candles, period) {
   const emaValues = [];
   if (!candles || candles.length === 0) return emaValues;
 
@@ -434,7 +434,7 @@ export function calculateEMA(candles, period) {
   return emaValues;
 }
 
-export function analyzeEMA(candles, ema20, ema50) {
+function analyzeEMA(candles, ema20, ema50) {
   const currentPrice = candles[candles.length - 1].close;
   const currentEMA20 = ema20[ema20.length - 1];
   const currentEMA50 = ema50[ema50.length - 1];
@@ -456,7 +456,7 @@ export function analyzeEMA(candles, ema20, ema50) {
   };
 }
 
-export function calculateRSI(candles, period = 14) {
+function calculateRSI(candles, period = 14) {
   const rsiValues = [];
   if (!candles || candles.length === 0) return rsiValues;
 
@@ -472,7 +472,7 @@ export function calculateRSI(candles, period = 14) {
   return rsiValues;
 }
 
-export function analyzeRSI(rsiValues) {
+function analyzeRSI(rsiValues) {
   const rsi = rsiValues[rsiValues.length - 1];
   let momentum = "neutral";
 
@@ -493,7 +493,7 @@ export function analyzeRSI(rsiValues) {
 }
 
 
-export async function analyzeMultiTimeframeTrend({ dailyCandles, hourlyCandles, selectedCandles }) {
+async function analyzeMultiTimeframeTrend({ dailyCandles, hourlyCandles, selectedCandles }) {
   const globalTrend = detectTrend(dailyCandles);
   const mediumTrend = hourlyCandles ? detectTrend(hourlyCandles) : null;
   const selectedTrend = selectedCandles ? detectTrend(selectedCandles) : null;
@@ -508,7 +508,7 @@ export async function analyzeMultiTimeframeTrend({ dailyCandles, hourlyCandles, 
   };
 }
 
-export function detectTrend(candles) {
+function detectTrend(candles) {
   if (!candles || candles.length < 5) {
     return {
       direction: "sideways",
@@ -622,7 +622,7 @@ export function detectTrend(candles) {
 /**
  * Detect support and resistance levels by clustering swing points.
  */
-export function detectSupportResistance(candles) {
+function detectSupportResistance(candles) {
   if (!candles || candles.length < 5) {
     return { supports: [], resistances: [] };
   }
@@ -718,7 +718,7 @@ export function detectSupportResistance(candles) {
 /**
  * Calculate momentum using RSI and rate of change.
  */
-export function calculateMomentum(candles) {
+function calculateMomentum(candles) {
   if (!candles || candles.length < 15) {
     return { rsi: 50, roc: 0, direction: "neutral", strength: "moderate", details: [] };
   }
@@ -778,7 +778,7 @@ export function calculateMomentum(candles) {
 /**
  * Analyze volume trends, average volume, and breakout detection.
  */
-export function analyzeVolume(candles) {
+function analyzeVolume(candles) {
   if (!candles || candles.length < 5) {
     return { avgVolume: 0, trend: "flat", breakouts: [], details: [] };
   }
@@ -852,7 +852,7 @@ export function analyzeVolume(candles) {
 /**
  * Scan ALL candles for patterns (enhanced with Marubozu and Spinning Top).
  */
-export function detectAllPatternsEnhanced(candles) {
+function detectAllPatternsEnhanced(candles) {
   if (candles.length < 3) return candles;
 
   const annotated = candles.map((c, i) => {
@@ -954,7 +954,7 @@ export function detectAllPatternsEnhanced(candles) {
  * Central analysis function: runs ALL analysis on a set of candles.
  * Returns unified result with chart action data.
  */
-export function analyzeSelectedRange(candles) {
+function analyzeSelectedRange(candles) {
   if (!candles || candles.length < 3) {
     return {
       trend: { direction: "neutral", strength: 0, confidence: 0 },
@@ -1078,7 +1078,7 @@ export function analyzeSelectedRange(candles) {
  * Runs all pattern detectors against the most recent candles.
  * Returns an array of matches with a bullish/bearish/neutral signal label.
  */
-export function detectPatterns(candles) {
+function detectPatterns(candles) {
   if (candles.length < 3) {
     throw new Error("Need at least 3 candles to detect patterns.");
   }
@@ -1141,7 +1141,7 @@ export function detectPatterns(candles) {
 /**
  * Convenience function combining fetch + detect, used by the chatbot tool.
  */
-export async function getCandlestickAnalysis(symbol, days = 30) {
+async function getCandlestickAnalysis(symbol, days = 30) {
   const candles = await fetchCandles(symbol, days);
   const analysis = detectPatterns(candles);
   return {
@@ -1155,7 +1155,7 @@ export async function getCandlestickAnalysis(symbol, days = 30) {
  * Returns the full candle array with `pattern` and `signal` fields added
  * on candles where a pattern is found.
  */
-export function detectAllPatterns(candles) {
+function detectAllPatterns(candles) {
   if (candles.length < 3) return candles;
 
   const annotated = candles.map((c, i) => {
@@ -1218,7 +1218,7 @@ export function detectAllPatterns(candles) {
   return annotated;
 }
 
-export async function getCandleDataForChart(symbol, range = "3mo", interval = "1d") {
+async function getCandleDataForChart(symbol, range = "3mo", interval = "1d") {
   const candles = await fetchCandles(symbol, range, interval);
   const annotated = detectAllPatternsEnhanced(candles);
 
@@ -1250,3 +1250,24 @@ export async function getCandleDataForChart(symbol, range = "3mo", interval = "1
   };
 }
 
+module.exports = {
+  fetchCandles,
+  findSwingPoints,
+  analyzeMarketStructure,
+  calculateSlope,
+  calculateEMA,
+  analyzeEMA,
+  calculateRSI,
+  analyzeRSI,
+  analyzeMultiTimeframeTrend,
+  detectTrend,
+  detectSupportResistance,
+  calculateMomentum,
+  analyzeVolume,
+  detectAllPatternsEnhanced,
+  analyzeSelectedRange,
+  detectPatterns,
+  getCandlestickAnalysis,
+  detectAllPatterns,
+  getCandleDataForChart
+};

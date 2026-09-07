@@ -1,22 +1,23 @@
 // chatController.js — Handles /api/chat endpoint
 
-import pool from "../services/db.js";
-import {
+const pool = require("../services/db.js");
+const {
   groq,
+  GROQ_LARGE_MODEL,
   SYSTEM_INSTRUCTION,
   getChatHistory,
   setChatHistory,
   detectStockIntent,
   parseAnalysisRequest,
   generateSearchSummary
-} from "../services/groqService.js";
-import { fetchStockData } from "../services/marketDataService.js";
-import { executeAnalysisTools } from "../services/analysisService.js";
-import {
+} = require("../services/groqService.js");
+const { fetchStockData } = require("../services/marketDataService.js");
+const { executeAnalysisTools } = require("../services/analysisService.js");
+const {
   getCandlestickAnalysis,
   fetchCandles,
   analyzeSelectedRange
-} from "../stockTools.js";
+} = require("../stockTools.js");
 
 // Tool definition for Groq tool-calling
 const tools = [
@@ -43,7 +44,7 @@ const tools = [
   }
 ];
 
-export async function handleChat(req, res) {
+async function handleChat(req, res) {
   try {
     const userMessage = req.body.message;
     if (!userMessage) {
@@ -126,7 +127,7 @@ Use the real-time figures above in your analysis. Be specific, realistic, and ob
     console.log(`[server] Sending chat to Groq (${messagesToSend.length} messages, tools enabled)...`);
 
     let completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: GROQ_LARGE_MODEL,
       messages: messagesToSend,
       tools: tools,
       tool_choice: "auto",
@@ -237,7 +238,7 @@ FORMATTING CONSTRAINTS
       console.log(`[server] Sending tool results back to Groq for final interpretation...`);
 
       completion = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: GROQ_LARGE_MODEL,
         messages: messagesToSend,
         max_tokens: 1024,
         temperature: 0.9
@@ -292,3 +293,5 @@ FORMATTING CONSTRAINTS
     res.status(500).json({ error: "Something went wrong talking to the AI." });
   }
 }
+
+module.exports = { handleChat };

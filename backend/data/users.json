@@ -34,5 +34,11 @@
     "username": "sumo2",
     "password": "7e521f6149f7a7edad41d4b28e4cdb3f:bd3d5c7eb602a5d03415381cb9cbb1307ab60a4d380da3bf5a81cb75903bf229e848be1a2506fb99aad3df37f7b25b261b7572da801ef82d38c36ece61db60dc",
     "created_at": "2026-07-07T05:20:31.981Z"
+  },
+  {
+    "id": "1787981004509",
+    "username": "diagnostic_user_4886",
+    "password": "hashedpassword123",
+    "created_at": "2026-08-29T05:23:24.510Z"
   }
 ]

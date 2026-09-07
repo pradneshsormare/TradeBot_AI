@@ -1,9 +1,9 @@
 // terminalController.js — Handles /api/terminal-analyze endpoint
 
-import pool from "../services/db.js";
-import { groq, parseAnalysisRequest, generateSearchSummary } from "../services/groqService.js";
-import { executeAnalysisTools, filterCandlesByTime } from "../services/analysisService.js";
-import { fetchCandles } from "../stockTools.js";
+const pool = require("../services/db.js");
+const { groq, GROQ_LARGE_MODEL, parseAnalysisRequest, generateSearchSummary } = require("../services/groqService.js");
+const { executeAnalysisTools, filterCandlesByTime } = require("../services/analysisService.js");
+const { fetchCandles } = require("../stockTools.js");
 
 function refersToSelection(command) {
   return /selected|marked|this area|this region|inside this|selection|highlighted|selection range/i.test(command);
@@ -67,7 +67,7 @@ function determineFetchRange(startDateStr) {
   }
 }
 
-export async function analyzeTerminal(req, res) {
+async function analyzeTerminal(req, res) {
   try {
     const { message, symbol, interval, selectedRange, candles: clientCandles } = req.body;
 
@@ -171,7 +171,7 @@ User Request: "${message}"
 Give a 3-5 sentence professional analysis summary that highlights the most important findings. Be specific with numbers and prices.`;
 
       const summaryCompletion = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: GROQ_LARGE_MODEL,
         messages: [{ role: "user", content: summaryPrompt }],
         max_tokens: 500,
         temperature: 0.3
@@ -219,3 +219,5 @@ Give a 3-5 sentence professional analysis summary that highlights the most impor
     res.status(500).json({ error: error.message || "Analysis failed." });
   }
 }
+
+module.exports = { analyzeTerminal };

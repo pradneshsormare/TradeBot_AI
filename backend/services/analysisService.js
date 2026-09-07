@@ -1,17 +1,17 @@
 // analysisService.js — Tool orchestrator for technical analysis
 
-import {
+const {
   detectTrend,
   detectSupportResistance,
   calculateMomentum,
   analyzeVolume,
   detectAllPatternsEnhanced
-} from "../stockTools.js";
+} = require("../stockTools.js");
 
 /**
  * Execute analysis tools based on parsed request and return chart actions.
  */
-export async function executeAnalysisTools(parsed, candles, symbol) {
+async function executeAnalysisTools(parsed, candles, symbol) {
   const results = {};
   const chartActions = [];
   const notes = [];
@@ -160,7 +160,7 @@ export async function executeAnalysisTools(parsed, candles, symbol) {
 /**
  * Filter candles by time range for intraday data.
  */
-export function filterCandlesByTime(candles, startTime, endTime, date) {
+function filterCandlesByTime(candles, startTime, endTime, date) {
   if (!candles || candles.length === 0) return candles;
 
   return candles.filter(c => {
@@ -182,3 +182,5 @@ export function filterCandlesByTime(candles, startTime, endTime, date) {
     return pass;
   });
 }
+
+module.exports = { executeAnalysisTools, filterCandlesByTime };

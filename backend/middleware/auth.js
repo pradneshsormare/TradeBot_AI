@@ -1,10 +1,10 @@
-import { verifyToken } from "../utils/auth.js";
+const { verifyToken } = require("../utils/auth.js");
 
 /**
  * Middleware to authenticate requests.
  * Extracts Bearer token from the Authorization header and verifies it.
  */
-export function authenticate(req, res, next) {
+function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -28,3 +28,5 @@ export function authenticate(req, res, next) {
   req.user = decoded;
   next();
 }
+
+module.exports = { authenticate };

@@ -5,7 +5,7 @@
  * @param {string} ticker — Yahoo Finance ticker (e.g. "RELIANCE.NS", "AAPL")
  * @returns {object|null} — Stock data with price, change, and 30-day history
  */
-export async function fetchStockData(ticker) {
+async function fetchStockData(ticker) {
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1mo`;
     const response = await fetch(url);
@@ -62,3 +62,5 @@ export async function fetchStockData(ticker) {
     return null;
   }
 }
+
+module.exports = { fetchStockData };

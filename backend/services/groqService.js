@@ -1,10 +1,60 @@
 // groqService.js — Centralized Groq AI client and shared AI functions
 
-import Groq from "groq-sdk";
+const Groq = require("groq-sdk");
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY || "gsk_placeholder_api_key_to_prevent_vercel_crash",
 });
+
+// Configure default models with fallback support
+const GROQ_LARGE_MODEL = process.env.GROQ_LARGE_MODEL || "qwen/qwen3.8-27b";
+const GROQ_SMALL_MODEL = process.env.GROQ_SMALL_MODEL || "qwen/qwen3.8-27b";
+
+// Fallback chain of capable models available on Groq
+const FALLBACK_MODELS = [
+  GROQ_LARGE_MODEL,
+  "qwen/qwen3.8-27b",
+  "openai/gpt-oss-120b",
+  "qwen/qwen3.6-27b",
+  "openai/gpt-oss-20b"
+].filter(Boolean);
+
+const KNOWN_UNAVAILABLE_MODELS = new Set();
+
+// Wrap groq.chat.completions.create with transparent resilience
+const rawCreate = groq.chat.completions.create.bind(groq.chat.completions);
+groq.chat.completions.create = async function (params) {
+  const requestedModel = params.model || GROQ_LARGE_MODEL;
+  const candidateModels = [
+    requestedModel,
+    GROQ_LARGE_MODEL,
+    "qwen/qwen3.8-27b",
+    "openai/gpt-oss-120b",
+    "qwen/qwen3.6-27b",
+    "openai/gpt-oss-20b"
+  ].filter((m, idx, arr) => m && arr.indexOf(m) === idx && !KNOWN_UNAVAILABLE_MODELS.has(m));
+
+  let lastError = null;
+  for (const model of candidateModels) {
+    try {
+      return await rawCreate({
+        ...params,
+        model
+      });
+    } catch (err) {
+      lastError = err;
+      const isModelError = err.status === 404 || 
+        (err.message && (err.message.includes("model") || err.message.includes("does not exist")));
+      if (isModelError) {
+        console.warn(`[groqService] Model '${model}' unavailable, switching to fallback candidate...`);
+        KNOWN_UNAVAILABLE_MODELS.add(model);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError;
+};
 
 const SYSTEM_INSTRUCTION = `You are TradeMind, an expert trading analyst and mentor with deep, practical knowledge across equities, forex, commodities, crypto, and derivatives. You combine technical analysis, fundamental analysis, and market psychology to give clear, actionable insights.
 
@@ -80,9 +130,9 @@ async function detectStockIntent(message) {
     `;
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: GROQ_LARGE_MODEL,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 150,
+      max_tokens: 350,
       response_format: { type: "json_object" }
     });
 
@@ -139,9 +189,9 @@ Rules:
 Return ONLY valid JSON.`;
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: GROQ_LARGE_MODEL,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 300,
+      max_tokens: 500,
       response_format: { type: "json_object" },
       temperature: 0
     });
@@ -179,9 +229,9 @@ async function generateSearchSummary(query, answer) {
     `;
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: GROQ_SMALL_MODEL,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 60,
+      max_tokens: 150,
       temperature: 0.3
     });
 
@@ -193,8 +243,10 @@ async function generateSearchSummary(query, answer) {
   }
 }
 
-export {
+module.exports = {
   groq,
+  GROQ_LARGE_MODEL,
+  GROQ_SMALL_MODEL,
   SYSTEM_INSTRUCTION,
   getChatHistory,
   setChatHistory,
@@ -202,3 +254,4 @@ export {
   parseAnalysisRequest,
   generateSearchSummary
 };
+

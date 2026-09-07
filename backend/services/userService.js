@@ -1,9 +1,9 @@
-import pool from "./db.js";
+const pool = require("./db.js");
 
 /**
  * Find a user by their username (case insensitive).
  */
-export async function findUserByUsername(username) {
+async function findUserByUsername(username) {
   try {
     const res = await pool.query(
       "SELECT * FROM users WHERE LOWER(username) = LOWER($1)",
@@ -19,7 +19,7 @@ export async function findUserByUsername(username) {
 /**
  * Add a new user to the PostgreSQL database.
  */
-export async function addUser(user) {
+async function addUser(user) {
   try {
     await pool.query(
       "INSERT INTO users (id, username, password) VALUES ($1, $2, $3)",
@@ -31,3 +31,5 @@ export async function addUser(user) {
     return false;
   }
 }
+
+module.exports = { findUserByUsername, addUser };

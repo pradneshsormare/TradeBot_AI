@@ -1,18 +1,17 @@
 // server.js — Express application entry point
 // All business logic lives in services/, controllers/, and routes/
 
-import "dotenv/config";
-import express from "express";
-import path from "path";
-import { fileURLToPath } from "url";
+require("dotenv").config({ override: true });
+const express = require("express");
+const path = require("path");
 
 // Route imports
-import authRoutes from "./routes/authRoutes.js";
-import chatRoutes from "./routes/chatRoutes.js";
-import marketRoutes from "./routes/marketRoutes.js";
-import terminalRoutes from "./routes/terminalRoutes.js";
-import historyRoutes from "./routes/historyRoutes.js";
-import { initDatabase } from "./services/db.js";
+const authRoutes = require("./routes/authRoutes.js");
+const chatRoutes = require("./routes/chatRoutes.js");
+const marketRoutes = require("./routes/marketRoutes.js");
+const terminalRoutes = require("./routes/terminalRoutes.js");
+const historyRoutes = require("./routes/historyRoutes.js");
+const { initDatabase } = require("./services/db.js");
 
 const app = express();
 
@@ -23,8 +22,6 @@ initDatabase();
 app.use(express.json());
 
 // Serve frontend static files from the frontend/ directory
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const frontendPath = path.join(__dirname, "..", "frontend");
 app.use(express.static(frontendPath));
 
@@ -50,4 +47,4 @@ if (!process.env.VERCEL) {
   app.listen(PORT, () => console.log(`TradeBot server running at http://localhost:${PORT}`));
 }
 
-export default app;
+module.exports = app;

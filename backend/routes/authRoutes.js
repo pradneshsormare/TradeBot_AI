@@ -1,7 +1,7 @@
-import { Router } from "express";
-import { findUserByUsername, addUser } from "../services/userService.js";
-import { hashPassword, verifyPassword, generateToken } from "../utils/auth.js";
-import { authenticate } from "../middleware/auth.js";
+const { Router } = require("express");
+const { findUserByUsername, addUser } = require("../services/userService.js");
+const { hashPassword, verifyPassword, generateToken } = require("../utils/auth.js");
+const { authenticate } = require("../middleware/auth.js");
 
 const router = Router();
 
@@ -98,4 +98,4 @@ router.get("/api/auth/me", authenticate, (req, res) => {
   });
 });
 
-export default router;
+module.exports = router;

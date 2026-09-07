@@ -1,4 +1,4 @@
-import crypto from "crypto";
+const crypto = require("crypto");
 
 const JWT_SECRET = process.env.JWT_SECRET || "super_secret_tradebot_key_2026";
 
@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "super_secret_tradebot_key_2026";
  * Hash a password using PBKDF2 with a unique salt.
  * Returns salt:hash format.
  */
-export function hashPassword(password) {
+function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
   const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, "sha512").toString("hex");
   return `${salt}:${hash}`;
@@ -15,7 +15,7 @@ export function hashPassword(password) {
 /**
  * Verify a password against a stored salted PBKDF2 hash.
  */
-export function verifyPassword(password, storedPassword) {
+function verifyPassword(password, storedPassword) {
   if (!storedPassword || !storedPassword.includes(":")) return false;
   const [salt, originalHash] = storedPassword.split(":");
   const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, "sha512").toString("hex");
@@ -26,7 +26,7 @@ export function verifyPassword(password, storedPassword) {
  * Generate a cryptographically signed token representing a user session.
  * Standard format is: base64Payload.signature
  */
-export function generateToken(payload) {
+function generateToken(payload) {
   // Token expires in 24 hours
   const payloadWithExpiry = {
     ...payload,
@@ -44,7 +44,7 @@ export function generateToken(payload) {
  * Verify a cryptographically signed token and return the payload.
  * Returns null if token is expired, invalid, or signature does not match.
  */
-export function verifyToken(token) {
+function verifyToken(token) {
   try {
     if (!token) return null;
     const parts = token.split(".");
@@ -70,3 +70,5 @@ export function verifyToken(token) {
     return null;
   }
 }
+
+module.exports = { hashPassword, verifyPassword, generateToken, verifyToken };

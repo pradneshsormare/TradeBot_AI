@@ -12,6 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const toRegisterBtn = document.getElementById("to-register");
     const toLoginBtn = document.getElementById("to-login");
 
+    // Clear inputs on page load to prevent browser autofill
+    const loginUsernameInput = document.getElementById("login-username");
+    const loginPasswordInput = document.getElementById("login-password");
+    if (loginUsernameInput) loginUsernameInput.value = "";
+    if (loginPasswordInput) loginPasswordInput.value = "";
+
     const loginError = document.getElementById("login-error");
     const loginSuccess = document.getElementById("login-success");
     const registerError = document.getElementById("register-error");

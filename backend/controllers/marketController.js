@@ -1,9 +1,9 @@
 // marketController.js — Handles /api/candles endpoint
 
-import { getCandleDataForChart } from "../stockTools.js";
-import { fetchStockData } from "../services/marketDataService.js";
+const { getCandleDataForChart } = require("../stockTools.js");
+const { fetchStockData } = require("../services/marketDataService.js");
 
-export async function getCandles(req, res) {
+async function getCandles(req, res) {
   try {
     const symbol = req.query.symbol;
     const range = req.query.range || "3mo";
@@ -34,3 +34,5 @@ export async function getCandles(req, res) {
     res.status(500).json({ error: error.message || "Failed to fetch candle data." });
   }
 }
+
+module.exports = { getCandles };
